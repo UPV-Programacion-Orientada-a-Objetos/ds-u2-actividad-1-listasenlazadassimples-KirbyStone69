@@ -18,23 +18,25 @@ set(HEADER_FILES
 
 # Definir el nombre del ejecutable y los archivos fuente
 add_executable(sensor_manager ${SOURCE_FILES})
+## Documentación con Doxygen (más robusta)
+# Esta sección genera un Doxyfile desde la plantilla Doxyfile.in y añade
+# un target CMake 'doc' que ejecuta Doxygen si está disponible en el sistema.
+set(PROJECT_DESCRIPTION "Sistema de gestión de sensores usando polimorfismo y templates")
 
-# Configuración para documentación con Doxygen
 find_package(Doxygen)
-if (DOXYGEN_FOUND)
-    # Configurar archivo Doxyfile
-    set(DOXYGEN_PROJECT_NAME "Sistema IoT de Monitoreo Polimórfico")
-    set(DOXYGEN_PROJECT_BRIEF "Sistema de gestión de sensores usando polimorfismo y templates")
-    set(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doxygen_docs)
-    set(DOXYGEN_EXTRACT_ALL YES)
-    set(DOXYGEN_EXTRACT_PRIVATE YES)
-    set(DOXYGEN_EXTRACT_STATIC YES)
-    set(DOXYGEN_GENERATE_HTML YES)
-    
-    # Generar documentación
-    doxygen_add_docs(doc 
-        ${SOURCE_FILES} 
-        ${HEADER_FILES}
-        COMMENT "Generando documentación con Doxygen"
+if(DOXYGEN_FOUND)
+    set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in)
+    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+
+    # Rellena la plantilla Doxyfile.in con variables de CMake
+    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+
+    add_custom_target(doc
+        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM
     )
+else()
+    message(STATUS "Doxygen not found. Documentation target 'doc' will not be available.")
 endif()
